@@ -24,6 +24,8 @@ def parse_data(x):
 def parse_user(missing_ratio=0.1):
     data = pd.read_csv("./user_behavior_data.txt", sep="\t")
     
+    if data.empty:
+        raise ValueError(f"No data found for user_id: {user_id}")
     # Обработка временной метки
     data["timestamp"] = data["timestamp"].apply(lambda x: datetime.strptime(x, "%Y-%m-%d %H:%M:%S").hour)
     
@@ -31,7 +33,9 @@ def parse_user(missing_ratio=0.1):
     for hour in range(24):
         observed_values.append(parse_data(data[data["timestamp"] == hour]))
     observed_values = np.array(observed_values)
-    observed_masks = ~np.isnan(observed_values)
+    
+    if observed_values.size == 0:
+        raise ValueError(f"No observed values for user_id: {user_id}")
 
     # Случайное задание некоторого процента отсутствующих данных
     masks = observed_masks.reshape(-1).copy()
