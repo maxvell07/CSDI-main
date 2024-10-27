@@ -10,7 +10,7 @@ from dataset_user_behavior import get_dataloader  # Импортируйте ф�
 from utils import train, evaluate
 
 parser = argparse.ArgumentParser(description="User Behavior Analysis")
-parser.add_argument("--config", type=str, default="user_behavior.yaml")
+parser.add_argument("--config", type=str, default="base.yaml")
 parser.add_argument('--device', default='cuda:0', help='Device for training')
 parser.add_argument("--seed", type=int, default=1)
 parser.add_argument("--testmissingratio", type=float, default=0.1)
