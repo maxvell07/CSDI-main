@@ -6,7 +6,7 @@ import yaml
 import os
 
 from main_model import CSDI_UserBehavior  # Импортируйте свою модель
-from dataset_user_behavior import get_dataloader  # Импортируйте функцию загрузки данных
+from dataset_user_behavior import get_user_behavior_dataloader  # Импортируйте функцию загрузки данных
 from utils import train, evaluate
 
 parser = argparse.ArgumentParser(description="User Behavior Analysis")

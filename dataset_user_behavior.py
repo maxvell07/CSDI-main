@@ -21,7 +21,7 @@ def parse_data(x):
     return values
 
 def parse_user(user_id, missing_ratio=0.1):
-    data = pd.read_csv(f"./data/user_behavior_data/{user_id}.txt", sep="\t")
+    data = pd.read_csv(f"./user_behavior_data.txt", sep="\t")
     
     # Обработка временной метки
     data["timestamp"] = data["timestamp"].apply(lambda x: datetime.strptime(x, "%Y-%m-%d %H:%M:%S").hour)
@@ -49,7 +49,7 @@ def parse_user(user_id, missing_ratio=0.1):
 
 def get_userlist():
     user_list = []
-    for filename in os.listdir("./data/user_behavior"):
+    for filename in os.listdir("./data/user_behavior_data"):
         match = re.search("\d+", filename)
         if match:
             user_list.append(match.group())
