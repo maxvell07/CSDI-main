@@ -40,7 +40,7 @@ os.makedirs(foldername, exist_ok=True)
 with open(foldername + "config.json", "w") as f:
     json.dump(config, f, indent=4)
 
-train_loader, valid_loader, test_loader = get_dataloader(
+train_loader, valid_loader, test_loader = get_user_behavior_dataloader(
     seed=args.seed,
     nfold=args.nfold,
     batch_size=config["train"]["batch_size"],
