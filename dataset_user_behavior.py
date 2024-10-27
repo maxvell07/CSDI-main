@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from torch.utils.data import DataLoader, Dataset
 from datetime import datetime
+import pickle
 
 # Список событий, которые могут быть в пользовательских данных
 event_types = ["page_view", "click", "form_submit", "scroll", "hover"]
@@ -20,8 +21,8 @@ def parse_data(x):
             values.append(np.nan)
     return values
 
-def parse_user(user_id, missing_ratio=0.1):
-    data = pd.read_csv(f"./user_behavior_data.txt", sep="\t")
+def parse_user(missing_ratio=0.1):
+    data = pd.read_csv("./user_behavior_data.txt", sep="\t")
     
     # Обработка временной метки
     data["timestamp"] = data["timestamp"].apply(lambda x: datetime.strptime(x, "%Y-%m-%d %H:%M:%S").hour)
@@ -47,15 +48,6 @@ def parse_user(user_id, missing_ratio=0.1):
 
     return observed_values, observed_masks, gt_masks
 
-def get_userlist():
-    user_list = []
-    for filename in os.listdir("./data/user_behavior_data"):
-        match = re.search("\d+", filename)
-        if match:
-            user_list.append(match.group())
-    user_list = np.sort(user_list)
-    return user_list
-
 class UserBehavior_Dataset(Dataset):
     def __init__(self, eval_length=24, use_index_list=None, missing_ratio=0.0, seed=0):
         self.eval_length = eval_length
@@ -67,16 +59,12 @@ class UserBehavior_Dataset(Dataset):
         path = f"./data/user_behavior_missing{missing_ratio}_seed{seed}.pk"
 
         if not os.path.isfile(path):
-            user_list = get_userlist()
-            for user_id in user_list:
-                try:
-                    observed_values, observed_masks, gt_masks = parse_user(user_id, missing_ratio)
-                    self.observed_values.append(observed_values)
-                    self.observed_masks.append(observed_masks)
-                    self.gt_masks.append(gt_masks)
-                except Exception as e:
-                    print(user_id, e)
-                    continue
+            # Загрузка данных из одного файла без использования user_id
+            observed_values, observed_masks, gt_masks = parse_user(missing_ratio)
+            self.observed_values.append(observed_values)
+            self.observed_masks.append(observed_masks)
+            self.gt_masks.append(gt_masks)
+
             self.observed_values = np.array(self.observed_values)
             self.observed_masks = np.array(self.observed_masks)
             self.gt_masks = np.array(self.gt_masks)
