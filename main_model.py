@@ -417,8 +417,8 @@ class CSDI_Forecasting(CSDI_base):
         return samples, observed_data, target_mask, observed_mask, observed_tp
 
 class CSDI_UserBehavior(CSDI_base):
-    def __init__(self, config, device, target_dim):
-        super(CSDI_UserBehavior, self).__init__(target_dim, config, device)
+    def __init__(self, config, device):
+        super(CSDI_UserBehavior, self).__init__( config, device)
 
     def process_data(self, batch):
         observed_data = batch["observed_data"].to(self.device).float()
