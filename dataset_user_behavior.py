@@ -27,7 +27,7 @@ def parse_user(user_id, missing_ratio=0.1):
         raise ValueError(f"No data found for user_id: {user_id}")
     
     # Обработка временной метки
-    user_data["timestamp"] = user_data["timestamp"].apply(lambda x: datetime.strptime(x, "%Y-%m-%d %H:%M:%S").hour)
+    user_data.loc[:, "timestamp"] = user_data["timestamp"].apply(lambda x: datetime.strptime(x, "%Y-%m-%d %H:%M:%S").hour)
     
     observed_values = []
     observed_masks = []  # Инициализация переменной для масок
@@ -66,6 +66,7 @@ def parse_user(user_id, missing_ratio=0.1):
     gt_masks = gt_masks.astype("float32")
 
     return observed_values, observed_masks, gt_masks
+
 
 class UserBehavior_Dataset(Dataset):
     def __init__(self, eval_length=24, use_index_list=None, missing_ratio=0.0, seed=0):
