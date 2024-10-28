@@ -79,7 +79,7 @@ class UserBehavior_Dataset(Dataset):
         path = f"./data/user_behavior_missing{missing_ratio}_seed{seed}.pk"
 
         print ("test")
-        if not os.path.isfile(path):
+        if os.path.isfile(path) == False:
             print ("test")
             # Загрузка данных из одного файла без использования user_id
             for user_id in range(1, 1001):  # Измените это значение на количество пользователей
