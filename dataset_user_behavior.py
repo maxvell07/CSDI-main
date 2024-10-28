@@ -10,32 +10,30 @@ import pickle
 event_types = ["page_view", "click", "form_submit", "scroll", "hover"]
 
 def parse_data(x):
-    # Преобразуем тип события в числовой формат
     x = x.set_index("event_type").to_dict()["duration"]
-    
     values = []
     for event in event_types:
-        if x.__contains__(event):
-            values.append(x[event])
-        else:
-            values.append(np.nan)
+        values.append(x.get(event, np.nan))  # Используйте get для безопасного получения значений
     return values
 
 def parse_user(user_id, missing_ratio=0.1):
     data = pd.read_csv("./user_behavior_data.txt", sep="\t")
     
-    # Проверка на наличие данных
-    if data.empty:
+    # Фильтруем данные для конкретного пользователя
+    user_data = data[data['user_id'] == user_id]
+    
+    # Проверка на наличие данных для конкретного пользователя
+    if user_data.empty:
         raise ValueError(f"No data found for user_id: {user_id}")
     
     # Обработка временной метки
-    data["timestamp"] = data["timestamp"].apply(lambda x: datetime.strptime(x, "%Y-%m-%d %H:%M:%S").hour)
+    user_data["timestamp"] = user_data["timestamp"].apply(lambda x: datetime.strptime(x, "%Y-%m-%d %H:%M:%S").hour)
     
     observed_values = []
     observed_masks = []  # Инициализация переменной для масок
 
     for hour in range(24):
-        hour_data = data[data["timestamp"] == hour]
+        hour_data = user_data[user_data["timestamp"] == hour]
         parsed_data = parse_data(hour_data)
         observed_values.append(parsed_data)
 
@@ -53,6 +51,10 @@ def parse_user(user_id, missing_ratio=0.1):
     # Случайное задание некоторого процента отсутствующих данных
     masks = observed_masks.reshape(-1).copy()
     obs_indices = np.where(masks)[0].tolist()
+    
+    if len(obs_indices) == 0:
+        raise ValueError(f"No observed indices found for user_id: {user_id}")
+
     miss_indices = np.random.choice(
         obs_indices, (int)(len(obs_indices) * missing_ratio), replace=False
     )
@@ -77,10 +79,11 @@ class UserBehavior_Dataset(Dataset):
 
         if not os.path.isfile(path):
             # Загрузка данных из одного файла без использования user_id
-            observed_values, observed_masks, gt_masks = parse_user(missing_ratio)
-            self.observed_values.append(observed_values)
-            self.observed_masks.append(observed_masks)
-            self.gt_masks.append(gt_masks)
+            for user_id in range(1, 1001):  # Измените это значение на количество пользователей
+                observed_values, observed_masks, gt_masks = parse_user(user_id, missing_ratio)
+                self.observed_values.append(observed_values)
+                self.observed_masks.append(observed_masks)
+                self.gt_masks.append(gt_masks)
 
             self.observed_values = np.array(self.observed_values)
             self.observed_masks = np.array(self.observed_masks)
@@ -93,8 +96,9 @@ class UserBehavior_Dataset(Dataset):
             std = np.zeros(len(event_types))
             for k in range(len(event_types)):
                 c_data = tmp_values[:, k][tmp_masks[:, k] == 1]
-                mean[k] = c_data.mean()
-                std[k] = c_data.std()
+                if c_data.size > 0:  # Добавьте проверку на наличие данных
+                    mean[k] = c_data.mean()
+                    std[k] = c_data.std() if c_data.std() != 0 else 1  # Избегайте деления на ноль
             self.observed_values = ((self.observed_values - mean) / std) * self.observed_masks
 
             with open(path, "wb") as f:
@@ -136,8 +140,8 @@ def get_user_behavior_dataloader(seed=1, nfold=None, batch_size=16, missing_rati
 
     np.random.seed(seed)
     np.random.shuffle(remain_index)
-    num_train = int(len(dataset) * 0.7)
-    
+    num_train = int(len(remain_index) * 0.7)  # Измените на remain_index
+
     if num_train <= 0:
         raise ValueError("No training samples available.")
 
