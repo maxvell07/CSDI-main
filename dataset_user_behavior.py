@@ -139,7 +139,7 @@ def get_user_behavior_dataloader(seed=1, nfold=None, batch_size=16, missing_rati
     np.random.shuffle(indlist)
 
     start = int(nfold * 0.2 * len(dataset)) if nfold else 0
-    end = int((nfold + 1) * 0.2 * len(dataset)) if nfold else len(dataset)
+    end = int((nfold + 1) * 0.2 * len(dataset)) if nfold else int (len(dataset)*0.2)
     test_index = indlist[start:end]
     remain_index = np.delete(indlist, np.arange(start, end))
 
