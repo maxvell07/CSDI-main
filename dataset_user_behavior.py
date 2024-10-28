@@ -21,19 +21,32 @@ def parse_data(x):
             values.append(np.nan)
     return values
 
-def parse_user(missing_ratio=0.1):
+def parse_user(user_id, missing_ratio=0.1):
     data = pd.read_csv("./user_behavior_data.txt", sep="\t")
     
+    # Проверка на наличие данных
     if data.empty:
         raise ValueError(f"No data found for user_id: {user_id}")
+    
     # Обработка временной метки
     data["timestamp"] = data["timestamp"].apply(lambda x: datetime.strptime(x, "%Y-%m-%d %H:%M:%S").hour)
     
     observed_values = []
+    observed_masks = []  # Инициализация переменной для масок
+
     for hour in range(24):
-        observed_values.append(parse_data(data[data["timestamp"] == hour]))
+        hour_data = data[data["timestamp"] == hour]
+        parsed_data = parse_data(hour_data)
+        observed_values.append(parsed_data)
+
+        # Добавление масок для текущего часа
+        masks = ~np.isnan(parsed_data)
+        observed_masks.append(masks)
+
     observed_values = np.array(observed_values)
-    
+    observed_masks = np.array(observed_masks)
+
+    # Проверка на наличие наблюдаемых значений
     if observed_values.size == 0:
         raise ValueError(f"No observed values for user_id: {user_id}")
 
