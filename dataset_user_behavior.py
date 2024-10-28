@@ -78,6 +78,7 @@ class UserBehavior_Dataset(Dataset):
         self.gt_masks = []
         path = f"./data/user_behavior_missing{missing_ratio}_seed{seed}.pk"
 
+        print ("test")
         if not os.path.isfile(path):
             print ("test")
             # Загрузка данных из одного файла без использования user_id
