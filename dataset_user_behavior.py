@@ -107,6 +107,7 @@ class UserBehavior_Dataset(Dataset):
             with open(path, "wb") as f:
                 pickle.dump([self.observed_values, self.observed_masks, self.gt_masks], f)
         else:
+            print ("test2")
             with open(path, "rb") as f:
                 self.observed_values, self.observed_masks, self.gt_masks = pickle.load(f)
 
