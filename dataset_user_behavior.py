@@ -119,7 +119,12 @@ class UserBehavior_Dataset(Dataset):
 
 def get_user_behavior_dataloader(seed=1, nfold=None, batch_size=16, missing_ratio=0.1):
     dataset = UserBehavior_Dataset(missing_ratio=missing_ratio, seed=seed)
+    
     indlist = np.arange(len(dataset))
+    
+    # Проверка на наличие данных в датасете
+    if len(indlist) == 0:
+        raise ValueError("Dataset is empty. Ensure data is loaded correctly.")
 
     np.random.seed(seed)
     np.random.shuffle(indlist)
@@ -132,11 +137,19 @@ def get_user_behavior_dataloader(seed=1, nfold=None, batch_size=16, missing_rati
     np.random.seed(seed)
     np.random.shuffle(remain_index)
     num_train = int(len(dataset) * 0.7)
+    
+    if num_train <= 0:
+        raise ValueError("No training samples available.")
+
     train_index = remain_index[:num_train]
     valid_index = remain_index[num_train:]
+
+    print(f"Train index size: {len(train_index)}")
+    print(f"Valid index size: {len(valid_index)}")
+    print(f"Test index size: {len(test_index)}")
 
     train_loader = DataLoader(UserBehavior_Dataset(use_index_list=train_index, missing_ratio=missing_ratio, seed=seed), batch_size=batch_size, shuffle=True)
     valid_loader = DataLoader(UserBehavior_Dataset(use_index_list=valid_index, missing_ratio=missing_ratio, seed=seed), batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(UserBehavior_Dataset(use_index_list=test_index, missing_ratio=missing_ratio, seed=seed), batch_size=batch_size, shuffle=False)
-    
+
     return train_loader, valid_loader, test_loader
